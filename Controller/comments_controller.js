@@ -100,6 +100,14 @@ export const deleteComment = async (req, res, next) => {
     const { id: commentId } = req.params;
     const { UserId } = req.user;
 
+    const comment = await Comments.findOne({
+        where: { id: commentId, userId: UserId },
+      });
+  
+      if (!comment) {
+        throw new NotFoundError("Comment does not exist");
+      }
+      
     const deleteCount = await Comments.destroy({
       where: { id: commentId, userId: UserId },
     });
