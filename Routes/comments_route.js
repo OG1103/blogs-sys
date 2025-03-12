@@ -2,6 +2,7 @@ import express from "express";
 import { createCommentSchema } from "../Validations/Comments.js";
 import {
   createComment,
+  deleteComment,
   getAllCommentsForPost,
   getAllUserComments,
   updateComment,
@@ -20,6 +21,6 @@ commentsRouter
 
 commentsRouter.get("/:postId", getAllCommentsForPost);
 
-commentsRouter.patch("/:id", updateComment);
+commentsRouter.route("/:id").patch(updateComment).delete(deleteComment);
 
 export default commentsRouter;

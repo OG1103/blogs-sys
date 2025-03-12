@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { StatusCodes } from "http-status-codes";
 import Users from "../Models/User.js";
 import bcrypt from "bcrypt";
-import { ConflictUserError, NotFoundError } from "../errors/index.js";
+import { ConflictUserError, NotFoundError,UnauthenticatedError } from "../errors/index.js";
 
 export const register = async (req, res, next) => {
   try {
@@ -42,8 +42,9 @@ export const login = async (req, res, next) => {
     }
 
     const validPassword = await bcrypt.compare(password, user.password);
+
     if (!validPassword) {
-      throw new UnauthorizedError("Invalid Password");
+      throw new NotFoundError("Invalid Password");
     }
 
     const payload = {

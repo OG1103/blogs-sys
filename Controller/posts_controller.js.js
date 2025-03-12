@@ -30,7 +30,7 @@ export const getAllPosts = async (req, res, next) => {
         {
           model: Users,
           as: "User",
-          attributes: ["firstName", "lastName"], // Include author details
+          attributes: ["firstName", "lastName"],
         },
       ],
     });

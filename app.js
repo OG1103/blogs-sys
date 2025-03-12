@@ -13,6 +13,7 @@ dotenv.config();
 
 // Midlewares
 const app = express();
+
 app.use(
   cors({
     origin: true, 

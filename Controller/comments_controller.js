@@ -55,7 +55,7 @@ export const getAllUserComments = async (req, res, next) => {
         {
           model: Posts,
           as: "Post",
-          attributes: ["title"],
+          attributes: ["title","description"],
         },
       ],
     });
