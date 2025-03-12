@@ -5,7 +5,7 @@ import { StatusCodes } from "http-status-codes";
 
 export const createPost = async (req, res, next) => {
   try {
-    const { title, description, userId } = req.body;
+    const { title, description } = req.body;
     const { UserId } = req.user;
     const post = await Posts.create({
       title,
@@ -15,7 +15,9 @@ export const createPost = async (req, res, next) => {
 
     console.log(req.user);
 
-    res.status(StatusCodes.CREATED).json({ MSG: `Post Created BY User ${req.user.name}`, post });
+    res
+      .status(StatusCodes.CREATED)
+      .json({ MSG: `Post Created BY User ${req.user.name}`, post });
   } catch (err) {
     next(err);
   }
@@ -23,8 +25,30 @@ export const createPost = async (req, res, next) => {
 
 export const getAllPosts = async (req, res, next) => {
   try {
+    const posts = await Posts.findAll({
+      include: [
+        {
+          model: Users,
+          as: "User",
+          attributes: ["firstName", "lastName"], // Include author details
+        },
+      ],
+    });
+
+    res.status(StatusCodes.OK).json({ posts });
+  } catch (err) {
+    next(err);
+  }
+};
+export const getAllUserPosts = async (req, res, next) => {
+  try {
     const { UserId } = req.user;
-    const posts = await Posts.findAll({ where: { userId: UserId }, include: [{ model: Users, as: "User", attributes: ["firstName", "lastName"] }] });
+    const posts = await Posts.findAll({
+      where: { userId: UserId },
+      include: [
+        { model: Users, as: "User", attributes: ["firstName", "lastName"] },
+      ],
+    });
 
     res.status(StatusCodes.OK).json({ posts });
   } catch (err) {
@@ -66,7 +90,9 @@ export const updatePost = async (req, res, next) => {
     if (!post) {
       throw new NotFoundError("Post Doesn't exist");
     }
-    const updatedCount = await Posts.update(updatedFields, { where: { id: postId, userId: UserId } });
+    const updatedCount = await Posts.update(updatedFields, {
+      where: { id: postId, userId: UserId },
+    });
     res.status(StatusCodes.OK).json({ Rows_Affected: updatedCount });
   } catch (err) {
     next(err);
@@ -78,7 +104,9 @@ export const deletePost = async (req, res, next) => {
     const { id: postId } = req.params;
     const { UserId } = req.user;
 
-    const deletCount = await Posts.destroy({ where: { id: postId, userId: UserId } });
+    const deletCount = await Posts.destroy({
+      where: { id: postId, userId: UserId },
+    });
 
     res.status(StatusCodes.OK).json({ Rows_Affected: deletCount });
   } catch (err) {
