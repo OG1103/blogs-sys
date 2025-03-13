@@ -1,10 +1,13 @@
 import jwt from "jsonwebtoken";
-import { NotFoundError, UnauthenticatedError } from "../errors/index.js";
+import { UnauthenticatedError } from "../errors/index.js";
 export default (req, res, next) => {
   try {
+    console.log("token",req.cookies.token);
+    
     const token = req.cookies.token;
     if (!token) {
       return next(new UnauthenticatedError("Authorization Token is not Provided"));
+      
     }
 
     const payLoad = jwt.verify(token, process.env.JWT_SECRET);

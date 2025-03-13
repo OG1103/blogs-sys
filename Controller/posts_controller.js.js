@@ -61,7 +61,16 @@ export const getSinglePost = async (req, res, next) => {
     const { id: postId } = req.params;
     const { UserId } = req.user;
 
-    const post = await Posts.findOne({ where: { id: postId, userId: UserId } });
+    const post = await Posts.findOne({
+      where: { id: postId, userId: UserId },
+      include: [
+        {
+          model: Users,
+          as: "User",
+          attributes: ["firstName", "lastName"],
+        },
+      ],
+    });
     if (!post) {
       throw new NotFoundError("Post Doesn't exist");
     }

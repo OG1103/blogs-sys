@@ -6,6 +6,8 @@ import { ConflictUserError, NotFoundError,UnauthenticatedError } from "../errors
 
 export const getUser = async (req, res, next) => {
   try {
+    console.log("Fetching User");
+    
     const { UserId } = req.user;
     
     const user = await Users.findOne({
@@ -53,7 +55,8 @@ export const register = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
+    console.log("testing");
+    
     const user = await Users.findOne({ where: { email: email } });
 
     if (!user) {
@@ -78,9 +81,8 @@ export const login = async (req, res, next) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, 
-      sameSite: "Lax",
-      domain: process.env.COOKIE_DOMAIN || "localhost",
+      secure: true, 
+      sameSite: "none",
       maxAge: 1000 * 60 * 60 * 24, // 1 day expiration
     });
 

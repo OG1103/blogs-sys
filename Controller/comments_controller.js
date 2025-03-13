@@ -1,5 +1,6 @@
 import Comments from "../Models/Comments.js";
 import Posts from "../Models/Posts.js";
+import Users from "../Models/User.js";
 import { NotFoundError } from "../errors/index.js";
 import { StatusCodes } from "http-status-codes";
 
@@ -26,24 +27,35 @@ export const createComment = async (req, res, next) => {
 };
 
 export const getAllCommentsForPost = async (req, res, next) => {
-    try {
-      const { postId } = req.params;
-  
-      const postExists = await Posts.findByPk(postId);
-      if (!postExists) {
-        throw new NotFoundError("Post does not exist");
-      }
-  
-      const comments = await Comments.findAll({
-        where: { postId },
-      });
-  
-      res.status(StatusCodes.OK).json({ comments });
-    } catch (err) {
-      next(err);
+  try {
+    const { postId } = req.params;
+
+    const postExists = await Posts.findByPk(postId);
+    if (!postExists) {
+      throw new NotFoundError("Post does not exist");
     }
-  };
-  
+
+    const comments = await Comments.findAll({
+      where: { postId },
+      include: [
+        {
+          model: Posts,
+          as: "Post",
+          attributes: ["title", "description"],
+        },
+        {
+          model: Users,
+          as: "User", 
+          attributes: ["firstName", "lastName"], 
+        },
+      ],
+    });
+
+    res.status(StatusCodes.OK).json({ comments });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const getAllUserComments = async (req, res, next) => {
   try {
@@ -55,7 +67,12 @@ export const getAllUserComments = async (req, res, next) => {
         {
           model: Posts,
           as: "Post",
-          attributes: ["title","description"],
+          attributes: ["title", "description"],
+        },
+        {
+          model: Users,
+          as: "User", // Ensure this matches the alias in associations
+          attributes: ["firstName", "lastName"], // Include only necessary fields
         },
       ],
     });
@@ -101,13 +118,13 @@ export const deleteComment = async (req, res, next) => {
     const { UserId } = req.user;
 
     const comment = await Comments.findOne({
-        where: { id: commentId, userId: UserId },
-      });
-  
-      if (!comment) {
-        throw new NotFoundError("Comment does not exist");
-      }
-      
+      where: { id: commentId, userId: UserId },
+    });
+
+    if (!comment) {
+      throw new NotFoundError("Comment does not exist");
+    }
+
     const deleteCount = await Comments.destroy({
       where: { id: commentId, userId: UserId },
     });
