@@ -4,6 +4,25 @@ import Users from "../Models/User.js";
 import bcrypt from "bcrypt";
 import { ConflictUserError, NotFoundError,UnauthenticatedError } from "../errors/index.js";
 
+export const getUser = async (req, res, next) => {
+  try {
+    const { UserId } = req.user;
+    
+    const user = await Users.findOne({
+      where: { id: UserId },
+      attributes: { exclude: ["password"] }, 
+    });
+
+    if (!user) {
+      throw new NotFoundError("User Not Found");
+    }
+
+    res.status(StatusCodes.OK).json({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const register = async (req, res, next) => {
   try {
     const { firstName, lastName, email, password } = req.body;
@@ -65,7 +84,7 @@ export const login = async (req, res, next) => {
       maxAge: 1000 * 60 * 60 * 24, // 1 day expiration
     });
 
-    res.status(200).json({ message: "Logged in successfully" , user});
+    res.status(StatusCodes.OK).json({ message: "Logged in successfully" , user});
   } catch (err) {
     next(err);
   }
@@ -74,6 +93,6 @@ export const login = async (req, res, next) => {
 export const logout = async(req,res,next)=>{
   res.clearCookie('token');
 
-  res.status(200).json({ message: 'Logged out successfully' });
+  res.status(StatusCodes.OK).json({ message: 'Logged out successfully' });
 }
 
