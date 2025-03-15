@@ -28,6 +28,7 @@ export const getUser = async (req, res, next) => {
 
     const { UserId } = req.user;
 
+    console.log(UserId);
     const user = await Users.findOne({
       where: { id: UserId },
       attributes: { exclude: ["password"] },

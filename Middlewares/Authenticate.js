@@ -18,7 +18,7 @@ export default (req, res, next) => {
     const payLoad = jwt.verify(token, process.env.JWT_SECRET);
 
     req.user = {
-      UserId: payLoad.userId,
+      UserId: payLoad.UserId,
       name: payLoad.name,
       email: payLoad.email,
     };
