@@ -14,19 +14,18 @@ dotenv.config();
 // Midlewares
 const app = express();
 
-// Dynamically allow all origins while supporting credentials
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests from any origin
-      callback(null, true);
+      if (!origin) {
+        return callback(null, false); // Deny requests with no origin (avoids sending "*")
+      }
+      callback(null, origin); // Explicitly echo back the origin
     },
     credentials: true, // Allow credentials (cookies, authorization headers)
   })
 );
 
-// Handle preflight requests
-app.options("*", cors());
 
 app.use(express.json());
 
