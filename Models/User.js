@@ -21,6 +21,10 @@ const Users = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    verified:{
+      type:DataTypes.BOOLEAN,
+      defaultValue: false,
+    }
   },
   {
     timestamps: true,
