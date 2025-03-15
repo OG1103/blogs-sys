@@ -79,14 +79,7 @@ export const login = async (req, res, next) => {
       expiresIn: process.env.JWT_LIFETIME,
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true, 
-      sameSite: "none",
-      maxAge: 1000 * 60 * 60 * 24, // 1 day expiration
-    });
-
-    res.status(StatusCodes.OK).json({ message: "Logged in successfully" , user});
+    res.status(StatusCodes.OK).json({ message: "Logged in successfully" , user, token});
   } catch (err) {
     next(err);
   }
