@@ -33,6 +33,11 @@ app.use(cookieParser());
 
 app.use(morgan("dev"));
 
+// Health Check EndPoint
+app.get("/", (req, res) => {
+  res.send("Welcome to the backend!");
+});
+
 //InitializeRoutes
 intializeRoutes(app);
 
