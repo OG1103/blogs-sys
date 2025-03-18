@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import AWS from "aws-sdk";
 import { StatusCodes } from "http-status-codes";
 import Users from "../Models/User.js";
-import bcrypt from "bcrypt";
 import crypto from "crypto";
 import {
   ConflictUserError,
@@ -31,7 +30,6 @@ export const getUser = async (req, res, next) => {
     console.log(UserId);
     const user = await Users.findOne({
       where: { id: UserId },
-      attributes: { exclude: ["password"] },
     });
 
     if (!user) {
@@ -66,13 +64,11 @@ export const register = async (req, res, next) => {
     };
 
     const cognitoResponse = await cognito.signUp(params).promise();
-    const hashedPassword = await bcrypt.hash(password, 8);
 
     const newUser = await Users.create({
       firstName,
       lastName,
       email,
-      password: hashedPassword,
     });
 
     res
@@ -143,16 +139,16 @@ export const login = async (req, res, next) => {
 export const verifyEmail = async (req, res, next) => {
   try {
     const { email, verificationCode } = req.body;
-    if(!email || !verificationCode){
+    if (!email || !verificationCode) {
       throw new NotFoundError("Missing verfication details");
     }
-    const clientId = process.env.COGNITO_APP_CLIENT_ID; 
+    const clientId = process.env.COGNITO_APP_CLIENT_ID;
     const clientSecret = process.env.COGNITO_APP_CLIENT_SECRET;
     const secretHash = calculateSecretHash(email, clientId, clientSecret);
 
     const params = {
       ClientId: clientId,
-      Username: email, 
+      Username: email,
       ConfirmationCode: verificationCode,
       SecretHash: secretHash,
     };
@@ -183,6 +179,71 @@ export const verifyEmail = async (req, res, next) => {
     }
   }
 };
+
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) throw new BadRequestError("Email is required");
+
+    const clientId = process.env.COGNITO_APP_CLIENT_ID;
+    const clientSecret = process.env.COGNITO_APP_CLIENT_SECRET;
+    const secretHash = calculateSecretHash(email, clientId, clientSecret);
+
+    const params = {
+      ClientId: clientId,
+      Username: email,
+      SecretHash: secretHash,
+    };
+
+    await cognito.forgotPassword(params).promise();
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: "Password reset code sent to your email" });
+  } catch (error) {
+    if (error.code === "UserNotFoundException") {
+      next(new NotFoundError("User not found"));
+    } else {
+      next(error);
+    }
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { email, newPassword, confirmationCode } = req.body;
+    if (!email || !newPassword || !confirmationCode) {
+      throw new BadRequestError("Missing required fields");
+    }
+
+    const clientId = process.env.COGNITO_APP_CLIENT_ID;
+    const clientSecret = process.env.COGNITO_APP_CLIENT_SECRET;
+    const secretHash = calculateSecretHash(email, clientId, clientSecret);
+
+    const params = {
+      ClientId: clientId,
+      Username: email,
+      ConfirmationCode: confirmationCode,
+      Password: newPassword,
+      SecretHash: secretHash,
+    };
+
+    await cognito.confirmForgotPassword(params).promise();
+
+    res
+      .status(StatusCodes.OK)
+      .json({ message: "Password reset successfully!" });
+  } catch (error) {
+    if (error.code === "CodeMismatchException") {
+      next(new BadRequestError("Invalid confirmation code"));
+    } else if (error.code === "ExpiredCodeException") {
+      next(new BadRequestError("Confirmation code expired"));
+    } else {
+      next(error);
+    }
+  }
+};
+
 
 export const logout = async (req, res, next) => {
   res.clearCookie("token");

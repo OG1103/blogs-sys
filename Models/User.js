@@ -17,10 +17,6 @@ const Users = sequelize.define(
       unique: true,
       allowNull: false,
     },
-    password: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
     verified:{
       type:DataTypes.BOOLEAN,
       defaultValue: false,
