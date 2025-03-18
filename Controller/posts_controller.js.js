@@ -59,10 +59,9 @@ export const getAllUserPosts = async (req, res, next) => {
 export const getSinglePost = async (req, res, next) => {
   try {
     const { id: postId } = req.params;
-    const { UserId } = req.user;
 
     const post = await Posts.findOne({
-      where: { id: postId, userId: UserId },
+      where: { id: postId},
       include: [
         {
           model: Users,
